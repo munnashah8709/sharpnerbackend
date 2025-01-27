@@ -1,34 +1,24 @@
-const fs=require("fs")
-// require("./Task1/index");
-//require("./views/Add_Product")
-
-
 const express = require('express');
-const path = require('path');
-
-const adminRoutes = require('./Routes/admin');
-const shopRoutes = require('./Routes/shop')
-const home=require("./Routes/home")
+const loginRoutes = require('./Routes/chapapp');
+const chatRoutes = require('./Routes/login');
 
 const app = express();
 
-// Middleware to parse request body
-app.use(express.urlencoded({ extended: false }));
+app.use((req, res, next) => {
+    // Add the username to the request headers from localStorage
+    req.headers.username = req.headers['username'] || req.body?.username || 'Anonymous';
+    next();
+});
 
-// Serve static files (like CSS or images if needed)
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(loginRoutes);
+app.use(chatRoutes);
 
-// Admin and Shop Routes
-app.use('/admin', adminRoutes);
-app.use('/shop', shopRoutes);
-app.use("/",home)
-
-// 404 Page for Undefined Routes
+// 404 Handler
 app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, 'views', '404.html'));
+    res.status(404).send('<h1>Page Not Found</h1>');
 });
 
 // Start the server
 app.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
+    console.log('Server running on http://localhost:3000');
 });
