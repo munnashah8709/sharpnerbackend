@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+</head>
+<body>
+    <h1>Welcome to the Chat App</h1>
+    <h2><span id="currentUser"></span></h2>
+
+    <form id="messageForm">
+        <textarea id="message" placeholder="Type your message..." required></textarea>
+        <button type="submit">Send Message</button>
+    </form>
+
+    <h2>Messages:</h2>
+    <div id="messages"></div>
+
+    <script>
+        // Display current username
+        const username = localStorage.getItem("username");
+        if (!username) {
+            window.location.href = "/login"; // Redirect to login if username is not set
+        } else {
+            document.getElementById("currentUser").textContent = username;
+        }
+
+        // Handle message form submission
+        document.getElementById("messageForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const message = document.getElementById("message").value;
+
+            await fetch("/send-message", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, message }),
+            });
+
+            document.getElementById("message").value = "";
+            loadMessages();
+        });
+
+        // Load messages from the server
+        async function loadMessages() {
+            const res = await fetch("/get-messages");
+            const messages = await res.json();
+            const messagesDiv = document.getElementById("messages");
+            messagesDiv.innerHTML = messages
+                .map(msg => `<p><strong>${msg.username}:</strong> ${msg.message}</p>`)
+                .join("");
+        }
+
+        // Initial load
+        loadMessages();
+    </script>
+</body>
+</html>
